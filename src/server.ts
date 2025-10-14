@@ -21,16 +21,20 @@ const PORT = process.env.PORT || 5000;
 // MIDDLEWARE
 // ==========================================
 
-// Security headers
-app.use(helmet());
-
-// CORS - Permetti richieste dal frontend
+// CORS - IMPORTANTE: Deve essere uno dei primi middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Body parser
+// Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Body parser - DEVE essere dopo CORS
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -92,6 +96,7 @@ app.listen(PORT, () => {
   ║   📍 Port: ${PORT}                      ║
   ║   🌍 Environment: ${process.env.NODE_ENV || 'development'}        ║
   ║   🔗 URL: http://localhost:${PORT}      ║
+  ║   ✅ CORS: http://localhost:3000      ║
   ║                                       ║
   ╚═══════════════════════════════════════╝
   `);
