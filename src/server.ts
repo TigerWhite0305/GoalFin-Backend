@@ -16,6 +16,7 @@ dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // ==========================================
 // MIDDLEWARE
@@ -42,19 +43,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 
 // Logging
-if (process.env.NODE_ENV === 'development') {
+if (NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
 }
 
-// Rate limiting - Max 100 richieste per 15 minuti per IP
+// Rate limiting - Limiti diversi per development e production
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Troppe richieste da questo IP, riprova tra 15 minuti'
+  windowMs: 15 * 60 * 1000, // 15 minuti
+  max: NODE_ENV === 'development' ? 1000 : 100, // 1000 in dev, 100 in prod
+  message: 'Troppe richieste da questo IP, riprova tra 15 minuti',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
+
 app.use('/api/', limiter);
+
+console.log(`🛡️  Rate Limit: ${NODE_ENV === 'development' ? '1000' : '100'} richieste / 15 min`);
 
 // ==========================================
 // ROUTES
@@ -94,7 +100,7 @@ app.listen(PORT, () => {
   ║   🚀 GoalFin Backend Server          ║
   ║                                       ║
   ║   📍 Port: ${PORT}                      ║
-  ║   🌍 Environment: ${process.env.NODE_ENV || 'development'}        ║
+  ║   🌍 Environment: ${NODE_ENV}        ║
   ║   🔗 URL: http://localhost:${PORT}      ║
   ║   ✅ CORS: http://localhost:3000      ║
   ║                                       ║
