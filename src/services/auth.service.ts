@@ -12,6 +12,7 @@ interface RegisterData {
 interface LoginData {
   email: string;
   password: string;
+  rememberMe?: boolean; // ← AGGIUNTO
 }
 
 /**
@@ -48,7 +49,7 @@ export const register = async (data: RegisterData) => {
     }
   });
 
-  // Genera token
+  // Genera token (default 24h per registrazione)
   const token = generateToken({
     userId: user.id,
     email: user.email
@@ -58,10 +59,10 @@ export const register = async (data: RegisterData) => {
 };
 
 /**
- * Login utente
+ * Login utente con durata token variabile
  */
 export const login = async (data: LoginData) => {
-  const { email, password } = data;
+  const { email, password, rememberMe = false } = data; // ← AGGIUNTO rememberMe
 
   // Trova utente
   const user = await prisma.user.findUnique({
@@ -79,11 +80,14 @@ export const login = async (data: LoginData) => {
     throw new Error('Email o password errati');
   }
 
-  // Genera token
-  const token = generateToken({
-    userId: user.id,
-    email: user.email
-  });
+  // Genera token con durata variabile
+  const token = generateToken(
+    {
+      userId: user.id,
+      email: user.email
+    },
+    { rememberMe } // ← Passa opzione rememberMe
+  );
 
   // Ritorna user senza password
   const { password: _, ...userWithoutPassword } = user;

@@ -49,7 +49,7 @@ export const registerController = async (
 
 /**
  * POST /api/auth/login
- * Login utente
+ * Login utente con supporto "Ricordami"
  */
 export const loginController = async (
   req: Request,
@@ -57,7 +57,7 @@ export const loginController = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body; // ← AGGIUNTO rememberMe
 
     // Validazione base
     if (!email || !password) {
@@ -67,7 +67,15 @@ export const loginController = async (
       });
     }
 
-    const result = await login({ email, password });
+    // Passa rememberMe al service
+    const result = await login({ 
+      email, 
+      password, 
+      rememberMe: rememberMe || false // ← Default false se non specificato
+    });
+
+    // Log per debug (rimuovere in production)
+    console.log(`✅ Login effettuato - Durata token: ${rememberMe ? '90 giorni' : '24 ore'}`);
 
     res.status(200).json({
       success: true,

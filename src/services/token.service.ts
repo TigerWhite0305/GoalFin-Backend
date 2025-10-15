@@ -2,24 +2,39 @@
 import { sign, verify } from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 interface TokenPayload {
   userId: string;
   email: string;
 }
 
+interface TokenOptions {
+  rememberMe?: boolean;
+}
+
 /**
- * Genera un JWT token
+ * Genera un JWT token con durata variabile
+ * @param payload - Dati utente (userId, email)
+ * @param options - Opzioni token (rememberMe)
+ * @returns JWT token string
  */
-export const generateToken = (payload: TokenPayload): string => {
+export const generateToken = (
+  payload: TokenPayload, 
+  options: TokenOptions = {}
+): string => {
+  // Se "Ricordami" è spuntato → 90 giorni (3 mesi)
+  // Altrimenti → 24 ore
+  const expiresIn = options.rememberMe ? '90d' : '24h';
+  
   return sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN as any
+    expiresIn
   });
 };
 
 /**
  * Verifica e decodifica un JWT token
+ * @param token - JWT token da verificare
+ * @returns Payload decodificato
  */
 export const verifyToken = (token: string): TokenPayload => {
   try {
