@@ -153,3 +153,82 @@ export const getAccountsSummary = async (userId: string) => {
     accounts
   };
 };
+
+/**
+ * Trasferisce denaro tra due conti
+ */
+export const transferBetweenAccounts = async (
+  userId: string,
+  fromAccountId: string,
+  toAccountId: string,
+  amount: number,
+  description?: string
+) => {
+  // Verifica che entrambi i conti appartengano all'utente
+  const fromAccount = await getAccountById(fromAccountId, userId);
+  const toAccount = await getAccountById(toAccountId, userId);
+
+  if (!fromAccount || !toAccount) {
+    throw new Error('Uno o entrambi i conti non sono stati trovati');
+  }
+
+  // Verifica fondi sufficienti
+  if (fromAccount.balance < amount) {
+    throw new Error('Fondi insufficienti');
+  }
+
+  // Verifica che non sia lo stesso conto
+  if (fromAccountId === toAccountId) {
+    throw new Error('Non puoi trasferire denaro allo stesso conto');
+  }
+
+  // Esegui il trasferimento in una transazione
+  const [updatedFrom, updatedTo] = await prisma.$transaction([
+    prisma.account.update({
+      where: { id: fromAccountId },
+      data: { balance: fromAccount.balance - amount }
+    }),
+    prisma.account.update({
+      where: { id: toAccountId },
+      data: { balance: toAccount.balance + amount }
+    })
+  ]);
+
+  return {
+    from: updatedFrom,
+    to: updatedTo,
+    amount,
+    description
+  };
+};
+
+/**
+ * Aggiusta il saldo di un conto
+ */
+export const adjustAccountBalance = async (
+  userId: string,
+  accountId: string,
+  newBalance: number,
+  reason?: string
+) => {
+  // Verifica che il conto appartenga all'utente
+  const account = await getAccountById(accountId, userId);
+
+  if (!account) {
+    throw new Error('Conto non trovato');
+  }
+
+  // Aggiorna il saldo
+  const updated = await prisma.account.update({
+    where: { id: accountId },
+    data: { balance: newBalance }
+  });
+
+  return {
+    account: updated,
+    oldBalance: account.balance,
+    newBalance,
+    difference: newBalance - account.balance,
+    reason
+  };
+};

@@ -6,7 +6,9 @@ import {
   getAccountById,
   updateAccount,
   deleteAccount,
-  getAccountsSummary
+  getAccountsSummary,
+  transferBetweenAccounts,
+  adjustAccountBalance
 } from '../services/accounts.service';
 
 /**
@@ -195,6 +197,116 @@ export const deleteAccountController = async (
       message: 'Conto eliminato con successo'
     });
   } catch (error: any) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/accounts/transfer
+ * Trasferisce denaro tra due conti
+ */
+export const transferBetweenAccountsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = (req as any).userId;
+    const { fromAccountId, toAccountId, amount, description } = req.body;
+
+    // Validazione
+    if (!fromAccountId || !toAccountId || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'fromAccountId, toAccountId e amount sono obbligatori'
+      });
+    }
+
+    if (amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'L\'importo deve essere maggiore di zero'
+      });
+    }
+
+    const result = await transferBetweenAccounts(
+      userId,
+      fromAccountId,
+      toAccountId,
+      amount,
+      description
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Trasferimento completato con successo',
+      data: result
+    });
+  } catch (error: any) {
+    if (error.message === 'Fondi insufficienti') {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message === 'Uno o entrambi i conti non sono stati trovati') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * PUT /api/accounts/:id/balance
+ * Aggiusta il saldo di un conto
+ */
+export const adjustAccountBalanceController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = (req as any).userId;
+    const { id } = req.params;
+    const { newBalance, reason } = req.body;
+
+    // Validazione
+    if (newBalance === undefined || newBalance === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'newBalance è obbligatorio'
+      });
+    }
+
+    if (newBalance < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Il saldo non può essere negativo'
+      });
+    }
+
+    const result = await adjustAccountBalance(
+      userId,
+      id,
+      newBalance,
+      reason
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Saldo aggiornato con successo',
+      data: result
+    });
+  } catch (error: any) {
+    if (error.message === 'Conto non trovato') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
     next(error);
   }
 };

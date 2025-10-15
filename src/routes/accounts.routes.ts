@@ -6,7 +6,9 @@ import {
   getAccountByIdController,
   updateAccountController,
   deleteAccountController,
-  getAccountsSummaryController
+  getAccountsSummaryController,
+  transferBetweenAccountsController,
+  adjustAccountBalanceController
 } from '../controllers/accounts.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 
@@ -37,6 +39,13 @@ router.get('/', getAccountsController);
 router.get('/summary', getAccountsSummaryController);
 
 /**
+ * @route   POST /api/accounts/transfer
+ * @desc    Trasferisci denaro tra due conti
+ * @access  Private
+ */
+router.post('/transfer', transferBetweenAccountsController);
+
+/**
  * @route   GET /api/accounts/:id
  * @desc    Ottieni singolo conto
  * @access  Private
@@ -49,6 +58,13 @@ router.get('/:id', getAccountByIdController);
  * @access  Private
  */
 router.put('/:id', updateAccountController);
+
+/**
+ * @route   PUT /api/accounts/:id/balance
+ * @desc    Aggiusta saldo conto
+ * @access  Private
+ */
+router.put('/:id/balance', adjustAccountBalanceController);
 
 /**
  * @route   DELETE /api/accounts/:id
