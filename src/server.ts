@@ -102,7 +102,7 @@ app.listen(PORT, () => {
   ║   📍 Port: ${PORT}                      ║
   ║   🌍 Environment: ${NODE_ENV}        ║
   ║   🔗 URL: http://localhost:${PORT}      ║
-  ║   ✅ CORS: http://localhost:3000      ║
+  ║   ✅ CORS: http://localhost:3000    ║
   ║                                       ║
   ╚═══════════════════════════════════════╝
   `);
