@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,78 +7,78 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// USER MODEL
-// ==========================================
-
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String   // Hashata con bcrypt
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relazioni
-  accounts     Account[]
-  transactions Transaction[]
-  goals        Goal[]
+  id               String            @id @default(uuid())
+  email            String            @unique
+  name             String
+  password         String
+  avatar           String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  accountSnapshots AccountSnapshot[]
+  accounts         Account[]
+  goals            Goal[]
+  transactions     Transaction[]
 
   @@map("users")
 }
 
-// ==========================================
-// ACCOUNT MODEL (Conti/Portafoglio)
-// ==========================================
-
 model Account {
-  id          String   @id @default(uuid())
-  name        String
-  type        String   // checking, savings, investment, cash
-  balance     Float    @default(0)
-  currency    String   @default("EUR")
-  color       String?
-  icon        String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relazioni
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
+  id               String            @id @default(uuid())
+  name             String
+  type             String
+  balance          Float             @default(0)
+  currency         String            @default("EUR")
+  color            String?
+  icon             String?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  userId           String
+  accountSnapshots AccountSnapshot[]
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     Transaction[]
 
   @@map("accounts")
 }
 
-// ==========================================
-// TRANSACTION MODEL
-// ==========================================
+model AccountSnapshot {
+  id          String   @id @default(uuid())
+  balance     Float
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  dayOfWeek   Int?
+  dayOfMonth  Int?
+  monthOfYear Int?
+  year        Int?
+  accountId   String
+  userId      String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, date])
+  @@index([userId, date])
+  @@index([date])
+  @@map("account_snapshots")
+}
 
 model Transaction {
   id          String   @id @default(uuid())
   amount      Float
-  type        String   // income, expense, transfer
+  type        String
   category    String
   description String?
   date        DateTime
   isRecurring Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relazioni
-  userId    String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId      String
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("transactions")
 }
-
-// ==========================================
-// GOAL MODEL (Obiettivi finanziari)
-// ==========================================
 
 model Goal {
   id            String    @id @default(uuid())
@@ -95,10 +92,8 @@ model Goal {
   isCompleted   Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
-  // Relazioni
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("goals")
 }

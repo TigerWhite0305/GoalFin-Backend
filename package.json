@@ -11,7 +11,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "seed:analytics": "ts-node scripts/seed/analyticsSeeder.ts",
+    "seed:analytics:dev": "ts-node-dev scripts/seed/analyticsSeeder.ts"
   },
   "keywords": [
     "goalfin",
@@ -31,7 +33,8 @@
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",

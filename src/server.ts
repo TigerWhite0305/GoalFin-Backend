@@ -11,6 +11,9 @@ import rateLimit from 'express-rate-limit';
 import routes from './routes';
 import { errorHandler } from './middleware/error.middleware';
 
+// Import analytics job
+import { startSnapshotJob } from './jobs/snapshotJob'; // ← NUOVO
+
 // Carica variabili ambiente
 dotenv.config();
 
@@ -90,6 +93,13 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // ==========================================
+// BACKGROUND JOBS
+// ==========================================
+
+// Avvia job per snapshot automatici
+startSnapshotJob();
+
+// ==========================================
 // START SERVER
 // ==========================================
 
@@ -103,6 +113,8 @@ app.listen(PORT, () => {
   ║   🌍 Environment: ${NODE_ENV}        ║
   ║   🔗 URL: http://localhost:${PORT}      ║
   ║   ✅ CORS: http://localhost:3000    ║
+  ║   📊 Analytics: Enabled              ║
+  ║   ⏰ Snapshot Job: Running           ║
   ║                                       ║
   ╚═══════════════════════════════════════╝
   `);

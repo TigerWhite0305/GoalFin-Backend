@@ -1,7 +1,8 @@
 // backend/src/routes/index.ts
 import { Router } from 'express';
 import authRoutes from './auth.routes';
-import accountsRoutes from './accounts.routes'; // ← NUOVO
+import accountsRoutes from './accounts.routes';
+import analyticsRoutes from './analytics.routes'; // ← NUOVO
 
 const router = Router();
 
@@ -9,7 +10,10 @@ const router = Router();
 router.use('/auth', authRoutes);
 
 // Accounts routes (Portfolio)
-router.use('/accounts', accountsRoutes); // ← NUOVO
+router.use('/accounts', accountsRoutes);
+
+// Analytics routes (Dashboard Analytics)
+router.use('/analytics', analyticsRoutes); // ← NUOVO
 
 // Health check interno
 router.get('/status', (req, res) => {
